@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exhibitor and Internal Feedback</title>
+<style>
+  :root {
+    --bg: #fafaf8;
+    --card: #ffffff;
+    --border: #e6e4df;
+    --text: #33322e;
+    --muted: #7c7a74;
+    --accent: #4a6b5d;
+    --pos-bg: #e4efe6; --pos-fg: #2e5e3a;
+    --neu-bg: #ecebe4; --neu-fg: #6b6752;
+    --att-bg: #f7e6e2; --att-fg: #8a4636;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 32px 16px 64px;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  header h1 { font-size: 1.5rem; font-weight: 600; }
+  header p { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+  section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+  }
+  h2 { font-size: 1.1rem; font-weight: 600; }
+  .purpose { color: var(--muted); font-size: 0.85rem; margin-bottom: 14px; }
+  form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  input[type="text"], select {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: #fff;
+    color: var(--text);
+  }
+  input[type="text"] { flex: 1 1 240px; min-width: 0; }
+  button {
+    padding: 8px 14px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  button:hover { opacity: 0.9; }
+  button.remove {
+    background: none;
+    color: var(--muted);
+    padding: 2px 8px;
+    font-size: 1rem;
+  }
+  button.remove:hover { color: var(--att-fg); }
+  ul { list-style: none; }
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    font-size: 0.92rem;
+  }
+  li .note-text { flex: 1; }
+  .tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .tag.positive { background: var(--pos-bg); color: var(--pos-fg); }
+  .tag.neutral { background: var(--neu-bg); color: var(--neu-fg); }
+  .tag.needs-attention { background: var(--att-bg); color: var(--att-fg); }
+  .empty { color: var(--muted); font-size: 0.85rem; padding: 10px 0; border-top: 1px solid var(--border); }
+  .counts { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
+  .count-card {
+    flex: 1 1 120px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .count-card .num { font-size: 1.4rem; font-weight: 600; }
+  .count-card .lbl { font-size: 0.78rem; color: var(--muted); }
+  .takeaway {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Exhibitor and Internal Feedback</h1>
+    <p>Collect exhibitor and internal team feedback side by side, with a live summary. Sample data only — nothing is saved between visits.</p>
+  </header>
+
+  <section id="exhibitor-section">
+    <h2>Exhibitor Survey</h2>
+    <p class="purpose">Capture feedback from exhibitors after the event.</p>
+    <form id="exhibitor-form">
+      <input type="text" id="exhibitor-input" placeholder="e.g. Booth traffic was steady all weekend" aria-label="Exhibitor feedback note">
+      <select id="exhibitor-tag" aria-label="Tag">
+        <option value="positive">Positive</option>
+        <option value="neutral" selected>Neutral</option>
+        <option value="needs-attention">Needs attention</option>
+      </select>
+      <button type="submit">Add note</button>
+    </form>
+    <ul id="exhibitor-list"></ul>
+  </section>
+
+  <section id="internal-section">
+    <h2>Internal Feedback</h2>
+    <p class="purpose">Collect notes from the internal organising team.</p>
+    <form id="internal-form">
+      <input type="text" id="internal-input" placeholder="e.g. Loading bay scheduling needs earlier sign-off" aria-label="Internal feedback note">
+      <select id="internal-tag" aria-label="Tag">
+        <option value="positive">Positive</option>
+        <option value="neutral" selected>Neutral</option>
+        <option value="needs-attention">Needs attention</option>
+      </select>
+      <button type="submit">Add note</button>
+    </form>
+    <ul id="internal-list"></ul>
+  </section>
+
+  <section id="summary-section">
+    <h2>Summary</h2>
+    <p class="purpose">Quick view of both lists together.</p>
+    <div class="counts">
+      <div class="count-card"><div class="num" id="c-ex-p">0</div><div class="lbl">Exhibitor — Positive</div></div>
+      <div class="count-card"><div class="num" id="c-ex-n">0</div><div class="lbl">Exhibitor — Neutral</div></div>
+      <div class="count-card"><div class="num" id="c-ex-a">0</div><div class="lbl">Exhibitor — Needs attention</div></div>
+      <div class="count-card"><div class="num" id="c-in-p">0</div><div class="lbl">Internal — Positive</div></div>
+      <div class="count-card"><div class="num" id="c-in-n">0</div><div class="lbl">Internal — Neutral</div></div>
+      <div class="count-card"><div class="num" id="c-in-a">0</div><div class="lbl">Internal — Needs attention</div></div>
+    </div>
+    <div class="takeaway" id="takeaway"></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var exhibitor = [
+    { text: "Booth traffic at Hall B was steady on both days — good mix of KL buyers and walk-ins.", tag: "positive" },
+    { text: "Wi-Fi near our booth kept dropping during demos on Saturday.", tag: "needs-attention" },
+    { text: "Setup timing was fine, but the forklift queue at MITEC loading bay ran slower than we expected.", tag: "neutral" }
+  ];
+  var internal = [
+    { text: "Volunteer check-in ran smoothly at the main entrance all weekend.", tag: "positive" },
+    { text: "Audio handover between the keynote stage and workshop rooms needs a clearer cue sheet next time.", tag: "needs-attention" },
+    { text: "Catering restock for the exhibitor lounge arrived close to schedule.", tag: "neutral" }
+  ];
+
+  var labels = { "positive": "Positive", "neutral": "Neutral", "needs-attention": "Needs attention" };
+
+  function renderList(ulId, items) {
+    var ul = document.getElementById(ulId);
+    ul.innerHTML = "";
+    if (items.length === 0) {
+      var li = document.createElement("li");
+      li.className = "empty";
+      li.textContent = "No feedback notes yet.";
+      ul.appendChild(li);
+      return;
+    }
+    items.forEach(function (item, i) {
+      var li = document.createElement("li");
+      var span = document.createElement("span");
+      span.className = "note-text";
+      span.textContent = item.text;
+      var right = document.createElement("span");
+      right.style.display = "flex";
+      right.style.alignItems = "center";
+      right.style.gap = "6px";
+      var tag = document.createElement("span");
+      tag.className = "tag " + item.tag;
+      tag.textContent = labels[item.tag];
+      var btn = document.createElement("button");
+      btn.className = "remove";
+      btn.type = "button";
+      btn.textContent = "×";
+      btn.title = "Remove note";
+      btn.setAttribute("aria-label", "Remove note");
+      btn.addEventListener("click", function () {
+        items.splice(i, 1);
+        render();
+      });
+      right.appendChild(tag);
+      right.appendChild(btn);
+      li.appendChild(span);
+      li.appendChild(right);
+      ul.appendChild(li);
+    });
+  }
+
+  function renderSummary() {
+    function count(list, tag) {
+      return list.filter(function (x) { return x.tag === tag; }).length;
+    }
+    document.getElementById("c-ex-p").textContent = count(exhibitor, "positive");
+    document.getElementById("c-ex-n").textContent = count(exhibitor, "neutral");
+    document.getElementById("c-ex-a").textContent = count(exhibitor, "needs-attention");
+    document.getElementById("c-in-p").textContent = count(internal, "positive");
+    document.getElementById("c-in-n").textContent = count(internal, "neutral");
+    document.getElementById("c-in-a").textContent = count(internal, "needs-attention");
+
+    var el = document.getElementById("takeaway");
+    var total = exhibitor.length + internal.length;
+    if (total === 0) {
+      el.textContent = "No feedback yet. Add a note above to see the overall status here.";
+      return;
+    }
+    var attention = count(exhibitor, "needs-attention") + count(internal, "needs-attention");
+    var positive = count(exhibitor, "positive") + count(internal, "positive");
+    var parts = ["There are " + total + " notes in total (" + exhibitor.length + " from exhibitors, " + internal.length + " from the internal team)."];
+    if (positive > 0) parts.push(positive + " are positive.");
+    if (attention > 0) {
+      parts.push(attention + " need" + (attention === 1 ? "s" : "") + " attention — worth reviewing before the summary is shared.");
+    } else {
+      parts.push("Nothing is flagged as needing attention right now.");
+    }
+    el.textContent = parts.join(" ");
+  }
+
+  function render() {
+    renderList("exhibitor-list", exhibitor);
+    renderList("internal-list", internal);
+    renderSummary();
+  }
+
+  function bindForm(formId, inputId, selectId, list) {
+    document.getElementById(formId).addEventListener("submit", function (e) {
+      e.preventDefault();
+      var input = document.getElementById(inputId);
+      var text = input.value.trim();
+      if (!text) return;
+      var tag = document.getElementById(selectId).value;
+      list.push({ text: text, tag: tag });
+      input.value = "";
+      document.getElementById(selectId).value = "neutral";
+      render();
+    });
+  }
+
+  bindForm("exhibitor-form", "exhibitor-input", "exhibitor-tag", exhibitor);
+  bindForm("internal-form", "internal-input", "internal-tag", internal);
+  render();
+})();
+</script>
+</body>
+</html>
